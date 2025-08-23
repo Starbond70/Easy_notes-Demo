@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotes } from '../contexts/NotesContext';
 import { AcademicTree } from '../utils/AcademicStructure';
 import { 
   GraduationCap, 
@@ -14,7 +15,12 @@ import {
   User,
   LogOut,
   ArrowLeft,
-  ChevronRight
+  ChevronRight,
+  Heart,
+  Share2,
+  Eye,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 
 const HomePage = () => {
@@ -28,6 +34,7 @@ const HomePage = () => {
     subject: ''
   });
   const { currentUser, logout } = useAuth();
+  const { getNotesBySubject, downloadNote } = useNotes();
 
   // Initialize the academic tree
   const academicTree = new AcademicTree();
@@ -292,6 +299,25 @@ const HomePage = () => {
         );
 
       case 'notes':
+        // Get the current subject information
+        const currentSubject = academicTree.getSubjects(
+          selectedOptions.degreeType, 
+          selectedOptions.degree, 
+          selectedOptions.semester, 
+          selectedOptions.specialization
+        ).find(s => s.id === selectedOptions.subject);
+
+        // Get notes for the current subject
+        const subjectNotes = getNotesBySubject(selectedOptions.subject);
+        const notesStats = {
+          totalNotes: subjectNotes.length,
+          totalDownloads: subjectNotes.reduce((sum, note) => sum + note.downloads, 0),
+          averageRating: subjectNotes.length > 0 
+            ? (subjectNotes.reduce((sum, note) => sum + note.rating, 0) / subjectNotes.length).toFixed(1)
+            : 0,
+          verifiedNotes: subjectNotes.filter(note => note.isVerified).length
+        };
+
         return (
           <div className="text-center mb-16">
             <div className="flex items-center justify-center mb-8">
@@ -303,38 +329,159 @@ const HomePage = () => {
                 <span>Back to Subjects</span>
               </button>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-gray-100 mb-6">
-              Available Notes
-            </h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-12">
-              Browse and download notes for your selected subject.
-            </p>
+            
+            {/* Subject Header */}
+            <div className="mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold text-gray-100 mb-4">
+                {currentSubject?.name || 'Subject'} Notes
+              </h2>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-6">
+                {currentSubject?.description || 'Browse and download notes for this subject'}
+              </p>
+              
+              {/* Subject Stats */}
+              <div className="flex justify-center space-x-8 text-sm text-gray-400">
+                <div className="flex items-center space-x-2">
+                  <span>📚</span>
+                  <span>{notesStats.totalNotes} notes available</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span>📥</span>
+                  <span>{notesStats.totalDownloads} total downloads</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span>⭐</span>
+                  <span>{notesStats.averageRating} avg rating</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span>✅</span>
+                  <span>{notesStats.verifiedNotes} verified</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Upload Button */}
+            <div className="mb-8">
+              <button className="inline-flex items-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                <Upload className="h-5 w-5" />
+                <span>Upload Notes</span>
+              </button>
+            </div>
+
+            {/* Notes Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Mock notes data */}
-              {[1, 2, 3, 4, 5, 6].map((note) => (
+              {subjectNotes.map((note) => (
                 <div
-                  key={note}
-                  className="group relative overflow-hidden bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-700 p-6"
+                  key={note.id}
+                  className="group relative overflow-hidden bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-700"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="relative">
-                    <div className="text-4xl mb-4">📚</div>
-                    <h3 className="text-lg font-bold text-gray-100 mb-2 group-hover:text-green-400 transition-colors">
-                      Note Set {note}
-                    </h3>
-                    <p className="text-gray-400 text-sm mb-4">
-                      Comprehensive notes covering all topics
-                    </p>
-                    <div className="flex justify-between items-center text-sm text-gray-500">
-                      <span>📄 15 pages</span>
-                      <span>⭐ 4.8/5</span>
+                  
+                  <div className="relative p-6">
+                    {/* Note Header */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="text-4xl">{note.thumbnail}</div>
+                      <div className="flex items-center space-x-2">
+                        {note.isVerified && (
+                          <CheckCircle className="h-4 w-4 text-green-400" title="Verified Note" />
+                        )}
+                        <div className="flex items-center space-x-1 text-yellow-400">
+                          <Star className="h-4 w-4 fill-current" />
+                          <span className="text-sm font-semibold">{note.rating}</span>
+                        </div>
+                      </div>
                     </div>
-                    <button className="w-full mt-4 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors">
-                      Download
-                    </button>
+
+                    {/* Note Title */}
+                    <h3 className="text-lg font-bold text-gray-100 mb-2 group-hover:text-green-400 transition-colors line-clamp-2">
+                      {note.title}
+                    </h3>
+
+                    {/* Note Description */}
+                    <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+                      {note.description}
+                    </p>
+
+                    {/* Note Metadata */}
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>👤 {note.author}</span>
+                        <span>📅 {note.uploadDate}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>📄 {note.pages} pages</span>
+                        <span>📁 {note.fileSize}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <span>📥 {note.downloads} downloads</span>
+                        <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs">
+                          {note.fileType}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-1 mb-4">
+                      {note.tags.slice(0, 3).map((tag, index) => (
+                        <span
+                          key={index}
+                          className="bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded-full"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                      {note.tags.length > 3 && (
+                        <span className="bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded-full">
+                          +{note.tags.length - 3}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => downloadNote(note.id)}
+                        className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium flex items-center justify-center space-x-1"
+                      >
+                        <Download className="h-4 w-4" />
+                        <span>Download</span>
+                      </button>
+                      <button className="bg-gray-700 text-gray-300 py-2 px-3 rounded-lg hover:bg-gray-600 transition-colors">
+                        <Heart className="h-4 w-4" />
+                      </button>
+                      <button className="bg-gray-700 text-gray-300 py-2 px-3 rounded-lg hover:bg-gray-600 transition-colors">
+                        <Share2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Empty State */}
+            {subjectNotes.length === 0 && (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📚</div>
+                <h3 className="text-xl font-semibold text-gray-100 mb-2">
+                  No Notes Available Yet
+                </h3>
+                <p className="text-gray-400 mb-6">
+                  Be the first to upload notes for {currentSubject?.name || 'this subject'}!
+                </p>
+                <button className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                  Upload First Note
+                </button>
+              </div>
+            )}
+
+            {/* Notes Counter */}
+            <div className="mt-8 text-center">
+              <p className="text-gray-400 text-sm">
+                Showing {subjectNotes.length} notes • 
+                <span className="text-green-400 ml-1">
+                  {subjectNotes.length > 0 ? 'More notes will appear as users upload them' : 'Start by uploading the first note'}
+                </span>
+              </p>
             </div>
           </div>
         );
