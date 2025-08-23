@@ -97,6 +97,8 @@ src/
 │   └── AuthContext.jsx  # Authentication state management
 ├── firebase/            # Firebase configuration
 │   └── config.js        # Firebase setup
+├── utils/               # Utility classes
+│   └── AcademicStructure.js # Tree data structure for academic programs
 ├── App.jsx              # Main application component
 ├── main.jsx             # Application entry point
 └── index.css            # Global styles and Tailwind imports
@@ -106,28 +108,35 @@ src/
 
 ### 1. Homepage
 - Hero section with search functionality
-- Degree selection cards (CS, EE, ME, CE)
+- Multi-step degree selection with tree data structure
 - Feature highlights and statistics
 - Call-to-action buttons
 
-### 2. Degree Navigation
+### 2. Academic Tree Structure
+- **Degree Types**: Diploma, Bachelor's, Master's
+- **Degrees**: DCA, DCE, B.Tech, BCA, M.Tech
+- **Specializations**: Computer Science, Information Technology
+- **Dynamic Semesters**: Based on degree duration (2-8 semesters)
+- **Subjects**: Specific to each semester and specialization
+
+### 3. Degree Navigation
 - Semester-wise organization
 - Subject count and note statistics
 - Visual indicators for content availability
 
-### 3. Semester View
+### 4. Semester View
 - Subject filtering sidebar
 - Notes listing with metadata
 - Search and filter functionality
 - File type indicators
 
-### 4. Upload System
+### 5. Upload System
 - Drag-and-drop file upload
 - Form validation
 - File type and size restrictions
 - Progress indicators
 
-### 5. Authentication
+### 6. Authentication
 - Email/password registration
 - Social login options (Google, Twitter)
 - Password visibility toggle
