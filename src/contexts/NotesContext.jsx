@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import apiService from '../services/api.js';
 
 const NotesContext = createContext();
 
@@ -16,108 +17,39 @@ export const NotesProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const { currentUser } = useAuth();
 
-  // Mock notes data - in real app, this would come from Firebase
-  const mockNotesData = [
-    {
-      id: 1,
-      subjectId: 'programming_fundamentals',
-      title: 'Programming Fundamentals Complete Notes',
-      description: 'Comprehensive notes covering C programming basics, data types, control structures, and functions',
-      author: 'John Doe',
-      authorId: 'user1',
-      uploadDate: '2024-01-15',
-      fileSize: '2.5 MB',
-      fileType: 'PDF',
-      pages: 45,
-      rating: 4.8,
-      downloads: 156,
-      tags: ['complete', 'comprehensive', 'exam-ready', 'c-programming'],
-      thumbnail: '📚',
-      fileUrl: '#',
-      isVerified: true
-    },
-    {
-      id: 2,
-      subjectId: 'programming_fundamentals',
-      title: 'Programming Fundamentals Quick Revision',
-      description: 'Condensed notes for last-minute revision with key concepts and examples',
-      author: 'Jane Smith',
-      authorId: 'user2',
-      uploadDate: '2024-01-10',
-      fileSize: '1.2 MB',
-      fileType: 'PDF',
-      pages: 25,
-      rating: 4.6,
-      downloads: 89,
-      tags: ['revision', 'quick', 'summary', 'c-programming'],
-      thumbnail: '⚡',
-      fileUrl: '#',
-      isVerified: false
-    },
-    {
-      id: 3,
-      subjectId: 'data_structures',
-      title: 'Data Structures & Algorithms Notes',
-      description: 'Complete coverage of arrays, linked lists, stacks, queues, and basic algorithms',
-      author: 'Mike Johnson',
-      authorId: 'user3',
-      uploadDate: '2024-01-08',
-      fileSize: '3.1 MB',
-      fileType: 'PDF',
-      pages: 67,
-      rating: 4.9,
-      downloads: 234,
-      tags: ['algorithms', 'data-structures', 'complete', 'advanced'],
-      thumbnail: '🧮',
-      fileUrl: '#',
-      isVerified: true
-    },
-    {
-      id: 4,
-      subjectId: 'database_management',
-      title: 'Database Management Systems',
-      description: 'SQL fundamentals, database design, normalization, and practical examples',
-      author: 'Sarah Wilson',
-      authorId: 'user4',
-      uploadDate: '2024-01-05',
-      fileSize: '1.8 MB',
-      fileType: 'PDF',
-      pages: 38,
-      rating: 4.7,
-      downloads: 123,
-      tags: ['sql', 'database', 'normalization', 'practical'],
-      thumbnail: '🗄️',
-      fileUrl: '#',
-      isVerified: true
+  // Fetch notes from API
+  const fetchNotes = async (params = {}) => {
+    setLoading(true);
+    try {
+      const response = await apiService.getNotes(params);
+      setNotes(response.notes);
+      return response;
+    } catch (error) {
+      console.error('Error fetching notes:', error);
+      throw error;
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   useEffect(() => {
-    // In real app, fetch notes from Firebase
-    setNotes(mockNotesData);
+    // Fetch initial notes
+    fetchNotes();
   }, []);
 
   const getNotesBySubject = (subjectId) => {
-    return notes.filter(note => note.subjectId === subjectId);
+    return notes.filter(note => note.subject === subjectId);
   };
 
-  const addNote = async (noteData) => {
+  const addNote = async (noteData, file) => {
     setLoading(true);
     try {
-      // In real app, upload to Firebase
-      const newNote = {
-        id: Date.now(),
-        ...noteData,
-        author: currentUser?.displayName || currentUser?.email || 'Anonymous',
-        authorId: currentUser?.uid || 'anonymous',
-        uploadDate: new Date().toISOString().split('T')[0],
-        downloads: 0,
-        rating: 0,
-        isVerified: false
-      };
+      const response = await apiService.uploadNote(noteData, file);
       
-      setNotes(prev => [newNote, ...prev]);
-      return newNote;
+      // Refresh notes list
+      await fetchNotes();
+      
+      return response.note;
     } catch (error) {
       console.error('Error adding note:', error);
       throw error;
@@ -128,19 +60,23 @@ export const NotesProvider = ({ children }) => {
 
   const downloadNote = async (noteId) => {
     try {
-      const note = notes.find(n => n.id === noteId);
+      const response = await apiService.downloadNote(noteId);
+      
+      // Refresh notes list to get updated download count
+      await fetchNotes();
+      
+      // Trigger actual file download
+      const note = notes.find(n => n._id === noteId);
       if (note) {
-        // In real app, increment download count in Firebase
-        setNotes(prev => prev.map(n => 
-          n.id === noteId 
-            ? { ...n, downloads: n.downloads + 1 }
-            : n
-        ));
-        
-        // Simulate download
-        console.log(`Downloading: ${note.title}`);
-        // In real app, trigger actual file download
+        const link = document.createElement('a');
+        link.href = response.downloadUrl;
+        link.download = note.fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
       }
+      
+      return response;
     } catch (error) {
       console.error('Error downloading note:', error);
       throw error;
@@ -149,11 +85,12 @@ export const NotesProvider = ({ children }) => {
 
   const rateNote = async (noteId, rating) => {
     try {
-      setNotes(prev => prev.map(note => 
-        note.id === noteId 
-          ? { ...note, rating: (note.rating + rating) / 2 }
-          : note
-      ));
+      const response = await apiService.rateNote(noteId, rating);
+      
+      // Refresh notes list to get updated rating
+      await fetchNotes();
+      
+      return response;
     } catch (error) {
       console.error('Error rating note:', error);
       throw error;
@@ -162,7 +99,10 @@ export const NotesProvider = ({ children }) => {
 
   const deleteNote = async (noteId) => {
     try {
-      setNotes(prev => prev.filter(note => note.id !== noteId));
+      await apiService.deleteNote(noteId);
+      
+      // Refresh notes list
+      await fetchNotes();
     } catch (error) {
       console.error('Error deleting note:', error);
       throw error;

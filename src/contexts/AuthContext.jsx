@@ -1,11 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged,
-  updateProfile 
-} from 'firebase/auth';
+import apiService from '../services/api.js';
 
 const AuthContext = createContext();
 
@@ -20,74 +14,36 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [firebaseError, setFirebaseError] = useState(null);
-
-  // Mock auth functions for development (when Firebase is not configured)
-  const mockSignup = async (email, password, displayName) => {
-    // Simulate successful signup
-    const mockUser = {
-      uid: 'mock-user-id',
-      email,
-      displayName,
-      emailVerified: true
-    };
-    setCurrentUser(mockUser);
-    return { user: mockUser };
-  };
-
-  const mockLogin = async (email, password) => {
-    // Simulate successful login
-    const mockUser = {
-      uid: 'mock-user-id',
-      email,
-      displayName: 'Demo User',
-      emailVerified: true
-    };
-    setCurrentUser(mockUser);
-    return { user: mockUser };
-  };
-
-  const mockLogout = async () => {
-    setCurrentUser(null);
-  };
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      try {
-        // Try to import Firebase auth
-        const { auth } = await import('../firebase/config');
-        
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-          setCurrentUser(user);
-          setLoading(false);
-        }, (error) => {
-          console.error('Firebase auth error:', error);
-          setFirebaseError(error);
+    // Check if user is already logged in (token exists)
+    const token = localStorage.getItem('token');
+    if (token) {
+      apiService.getProfile()
+        .then(response => {
+          setCurrentUser(response.user);
+        })
+        .catch(error => {
+          console.error('Failed to get profile:', error);
+          localStorage.removeItem('token');
+        })
+        .finally(() => {
           setLoading(false);
         });
-
-        return unsubscribe;
-      } catch (error) {
-        console.warn('Firebase not configured, using mock auth:', error);
-        setFirebaseError(error);
-        setLoading(false);
-        // No need to return unsubscribe for mock auth
-      }
-    };
-
-    initializeAuth();
+    } else {
+      setLoading(false);
+    }
   }, []);
 
   const signup = async (email, password, displayName) => {
-    if (firebaseError) {
-      return mockSignup(email, password, displayName);
-    }
-    
     try {
-      const { auth } = await import('../firebase/config');
-      const result = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(result.user, { displayName });
-      return result;
+      const response = await apiService.register({ email, password, displayName });
+      
+      // Store token and set user
+      localStorage.setItem('token', response.token);
+      setCurrentUser(response.user);
+      
+      return response;
     } catch (error) {
       console.error('Signup error:', error);
       throw error;
@@ -95,13 +51,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
-    if (firebaseError) {
-      return mockLogin(email, password);
-    }
-    
     try {
-      const { auth } = await import('../firebase/config');
-      return signInWithEmailAndPassword(auth, email, password);
+      const response = await apiService.login({ email, password });
+      
+      // Store token and set user
+      localStorage.setItem('token', response.token);
+      setCurrentUser(response.user);
+      
+      return response;
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -109,16 +66,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    if (firebaseError) {
-      return mockLogout();
-    }
-    
     try {
-      const { auth } = await import('../firebase/config');
-      return signOut(auth);
+      // Remove token and clear user
+      localStorage.removeItem('token');
+      setCurrentUser(null);
     } catch (error) {
       console.error('Logout error:', error);
-      throw error;
+      // Still clear local state even if there's an error
+      localStorage.removeItem('token');
+      setCurrentUser(null);
     }
   };
 
@@ -126,8 +82,7 @@ export const AuthProvider = ({ children }) => {
     currentUser,
     signup,
     login,
-    logout,
-    firebaseError
+    logout
   };
 
   return (
