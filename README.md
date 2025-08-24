@@ -1,6 +1,6 @@
 # EasyNotes - Student Notes Sharing Platform
 
-A comprehensive student notes sharing platform built with React.js and Firebase, designed to help students organize, share, and discover academic notes in a structured manner.
+A comprehensive student notes sharing platform built with React.js and Express.js + MongoDB, designed to help students organize, share, and discover academic notes in a structured manner.
 
 ## 🎯 Project Overview
 
@@ -12,7 +12,7 @@ EasyNotes addresses the common problem of scattered academic notes across variou
 
 - **Hierarchical Navigation**: Easy browsing through degrees, semesters, subjects, and units
 - **Community-Driven**: Students can upload and download handwritten or digital notes
-- **User Authentication**: Secure login/signup system with Firebase Auth
+- **User Authentication**: Secure login/signup system with JWT authentication
 - **File Upload**: Support for PDF, Word documents, and images
 - **Search & Filter**: Find notes quickly with advanced search and filtering
 - **Rating System**: Community-driven quality control with likes and ratings
@@ -24,10 +24,11 @@ EasyNotes addresses the common problem of scattered academic notes across variou
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
 - **Routing**: React Router DOM
-- **Backend**: Firebase
-  - Authentication
-  - Firestore (Database)
-  - Storage (File uploads)
+- **Backend**: Express.js + Node.js
+  - MongoDB with Mongoose ODM
+  - JWT Authentication
+  - Multer for file uploads
+  - Express middleware for security
 - **Build Tool**: Vite
 - **Hosting**: Vercel/Netlify ready
 
@@ -37,7 +38,7 @@ EasyNotes addresses the common problem of scattered academic notes across variou
 
 - Node.js (v16 or higher)
 - npm or yarn
-- Firebase account
+- MongoDB (local or MongoDB Atlas)
 
 ### Installation
 
@@ -47,38 +48,52 @@ EasyNotes addresses the common problem of scattered academic notes across variou
    cd easy-notes
    ```
 
-2. **Install dependencies**
+2. **Install frontend dependencies**
    ```bash
    npm install
    ```
 
-3. **Firebase Setup**
-   - Create a new Firebase project at [Firebase Console](https://console.firebase.google.com/)
-   - Enable Authentication (Email/Password)
-   - Create a Firestore database
-   - Enable Storage
-   - Get your Firebase configuration
-
-4. **Configure Firebase**
-   - Open `src/firebase/config.js`
-   - Replace the placeholder configuration with your Firebase project details:
-   ```javascript
-   const firebaseConfig = {
-     apiKey: "your-api-key",
-     authDomain: "your-project.firebaseapp.com",
-     projectId: "your-project-id",
-     storageBucket: "your-project.appspot.com",
-     messagingSenderId: "your-sender-id",
-     appId: "your-app-id"
-   };
+3. **Install backend dependencies**
+   ```bash
+   cd server
+   npm install
+   cd ..
    ```
 
-5. **Start the development server**
+4. **Environment Setup**
+   - Create `server/.env` file with:
+   ```bash
+   PORT=5000
+   MONGODB_URI=mongodb://localhost:27017/easy-notes
+   JWT_SECRET=your-secret-key
+   FRONTEND_URL=http://localhost:5173
+   ```
+   
+   - Create `.env.local` file with:
+   ```bash
+   VITE_API_URL=http://localhost:5000/api
+   ```
+
+5. **Start MongoDB**
+   ```bash
+   # Local MongoDB
+   mongod
+   
+   # Or use MongoDB Atlas (cloud)
+   ```
+
+6. **Start the backend server**
+   ```bash
+   cd server
+   npm run dev
+   ```
+
+7. **Start the frontend (in a new terminal)**
    ```bash
    npm run dev
    ```
 
-6. **Open your browser**
+8. **Open your browser**
    Navigate to `http://localhost:5173`
 
 ## 📁 Project Structure
@@ -94,14 +109,29 @@ src/
 │   ├── SignupPage.jsx   # User registration
 │   └── Navbar.jsx       # Navigation component
 ├── contexts/            # React contexts
-│   └── AuthContext.jsx  # Authentication state management
-├── firebase/            # Firebase configuration
-│   └── config.js        # Firebase setup
+│   ├── AuthContext.jsx  # Authentication state management
+│   └── NotesContext.jsx # Notes state management
+├── services/            # API service layer
+│   └── api.js          # HTTP client for backend communication
 ├── utils/               # Utility classes
 │   └── AcademicStructure.js # Tree data structure for academic programs
 ├── App.jsx              # Main application component
 ├── main.jsx             # Application entry point
 └── index.css            # Global styles and Tailwind imports
+
+server/
+├── models/              # MongoDB schemas
+│   ├── User.js         # User model
+│   └── Note.js         # Note model
+├── routes/              # API endpoints
+│   ├── auth.js         # Authentication routes
+│   ├── notes.js        # Notes management routes
+│   └── users.js        # User management routes
+├── middleware/          # Custom middleware
+│   └── auth.js         # JWT authentication middleware
+├── uploads/             # File storage directory
+├── server.js            # Main server file
+└── package.json         # Backend dependencies
 ```
 
 ## 🎨 Features in Detail
@@ -138,28 +168,34 @@ src/
 
 ### 6. Authentication
 - Email/password registration
-- Social login options (Google, Twitter)
+- JWT-based authentication
 - Password visibility toggle
 - Form validation and error handling
 
 ## 🔧 Available Scripts
 
+### Frontend
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run lint` - Run ESLint
 
+### Backend
+- `cd server && npm run dev` - Start backend server
+- `cd server && npm start` - Start production backend
+
 ## 🌐 Deployment
 
-### Vercel Deployment
-1. Install Vercel CLI: `npm i -g vercel`
-2. Run: `vercel`
-3. Follow the prompts
+### Backend Deployment
+1. Set production environment variables
+2. Use MongoDB Atlas for database
+3. Deploy to Heroku, Railway, or similar platforms
+4. Use cloud storage (AWS S3) for file uploads
 
-### Netlify Deployment
+### Frontend Deployment
 1. Build the project: `npm run build`
-2. Drag the `dist` folder to Netlify
-3. Configure environment variables if needed
+2. Deploy to Vercel, Netlify, or any static hosting
+3. Update `VITE_API_URL` to production backend URL
 
 ## 📱 Responsive Design
 
@@ -170,11 +206,13 @@ The application is fully responsive and optimized for:
 
 ## 🔒 Security Features
 
-- Firebase Authentication
+- JWT Authentication
+- Password hashing with bcrypt
+- Input validation with express-validator
+- Rate limiting
+- CORS protection
+- Helmet security headers
 - File upload restrictions
-- Input validation
-- XSS protection
-- Secure routing
 
 ## 🚧 Future Enhancements
 
