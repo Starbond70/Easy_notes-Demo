@@ -4,23 +4,21 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNotes } from '../contexts/NotesContext';
 import { AcademicTree } from '../utils/AcademicStructure';
 import { 
-  GraduationCap, 
   BookOpen, 
   Users, 
   Upload, 
   Download, 
   Star,
-  ArrowRight,
   Search,
   User,
   LogOut,
-  ArrowLeft,
-  ChevronRight,
   Heart,
   Share2,
-  Eye,
   CheckCircle,
-  AlertCircle
+  Plus,
+  GraduationCap,
+  ArrowLeft,
+  ChevronRight
 } from 'lucide-react';
 
 const HomePage = () => {
@@ -34,7 +32,7 @@ const HomePage = () => {
     subject: ''
   });
   const { currentUser, logout } = useAuth();
-  const { getNotesBySubject, downloadNote } = useNotes();
+  const { notes, loading, downloadNote, rateNote } = useNotes();
 
   // Initialize the academic tree
   const academicTree = new AcademicTree();
@@ -55,7 +53,7 @@ const HomePage = () => {
       degreeType: 'degree',
       degree: () => {
         const degree = academicTree.getDegree(selectedOptions.degreeType, value);
-        return degree?.hasSpecializations() ? 'specialization' : 'semester';
+        return degree?.hasSpecializations ? 'specialization' : 'semester';
       },
       specialization: 'semester',
       semester: 'subject',
@@ -72,7 +70,7 @@ const HomePage = () => {
       specialization: 'degree',
       semester: () => {
         const degree = academicTree.getDegree(selectedOptions.degreeType, selectedOptions.degree);
-        return degree?.hasSpecializations() ? 'specialization' : 'degree';
+        return degree?.hasSpecializations ? 'specialization' : 'degree';
       },
       subject: 'semester',
       notes: 'subject'
@@ -126,6 +124,7 @@ const HomePage = () => {
 
       case 'degree':
         const degreeType = academicTree.getDegreeType(selectedOptions.degreeType);
+        const degrees = academicTree.degrees[selectedOptions.degreeType] || [];
         return (
           <div className="text-center mb-16">
             <div className="flex items-center justify-center mb-8">
@@ -144,7 +143,7 @@ const HomePage = () => {
               Select your specific degree program.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {degreeType?.degrees.map((degree) => (
+              {degrees.map((degree) => (
                 <button
                   key={degree.id}
                   onClick={() => handleSelection('degree', degree.id)}
@@ -170,6 +169,7 @@ const HomePage = () => {
 
       case 'specialization':
         const degree = academicTree.getDegree(selectedOptions.degreeType, selectedOptions.degree);
+        const specializations = degree?.specializations || [];
         return (
           <div className="text-center mb-16">
             <div className="flex items-center justify-center mb-8">
@@ -188,7 +188,7 @@ const HomePage = () => {
               Select your area of specialization.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {degree?.specializations.map((spec) => (
+              {specializations.map((spec) => (
                 <button
                   key={spec.id}
                   onClick={() => handleSelection('specialization', spec.id)}
@@ -213,11 +213,7 @@ const HomePage = () => {
         );
 
       case 'semester':
-        const semesters = academicTree.getSemesters(selectedOptions.degreeType, selectedOptions.degree, selectedOptions.specialization);
-        console.log('Selected options:', selectedOptions);
-        console.log('Semesters found:', semesters);
-        console.log('Number of semesters:', semesters.length);
-        
+        const semesters = academicTree.getSemesters(selectedOptions.degreeType, selectedOptions.degree, selectedOptions.specialization) || [];
         return (
           <div className="text-center mb-16">
             <div className="flex items-center justify-center mb-8">
@@ -258,7 +254,7 @@ const HomePage = () => {
         );
 
       case 'subject':
-        const subjects = academicTree.getSubjects(selectedOptions.degreeType, selectedOptions.degree, selectedOptions.semester, selectedOptions.specialization);
+        const subjects = academicTree.getSubjects(selectedOptions.degreeType, selectedOptions.degree, selectedOptions.semester, selectedOptions.specialization) || [];
         return (
           <div className="text-center mb-16">
             <div className="flex items-center justify-center mb-8">
@@ -300,20 +296,21 @@ const HomePage = () => {
 
       case 'notes':
         // Get the current subject information
-        const currentSubject = academicTree.getSubjects(
+        const allSubjects = academicTree.getSubjects(
           selectedOptions.degreeType, 
           selectedOptions.degree, 
           selectedOptions.semester, 
           selectedOptions.specialization
-        ).find(s => s.id === selectedOptions.subject);
+        ) || [];
+        const currentSubject = allSubjects.find(s => s.id === selectedOptions.subject);
 
         // Get notes for the current subject
-        const subjectNotes = getNotesBySubject(selectedOptions.subject);
+        const subjectNotes = notes.filter(note => note.subjectId === selectedOptions.subject) || [];
         const notesStats = {
           totalNotes: subjectNotes.length,
-          totalDownloads: subjectNotes.reduce((sum, note) => sum + note.downloads, 0),
+          totalDownloads: subjectNotes.reduce((sum, note) => sum + (note.downloads || 0), 0),
           averageRating: subjectNotes.length > 0 
-            ? (subjectNotes.reduce((sum, note) => sum + note.rating, 0) / subjectNotes.length).toFixed(1)
+            ? (subjectNotes.reduce((sum, note) => sum + (note.rating || 0), 0) / subjectNotes.length).toFixed(1)
             : 0,
           verifiedNotes: subjectNotes.filter(note => note.isVerified).length
         };
@@ -362,15 +359,15 @@ const HomePage = () => {
 
             {/* Upload Button */}
             <div className="mb-8">
-              <button className="inline-flex items-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+              <Link to="/upload" className="inline-flex items-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
                 <Upload className="h-5 w-5" />
                 <span>Upload Notes</span>
-              </button>
+              </Link>
             </div>
 
             {/* Notes Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {subjectNotes.map((note) => (
+              {(subjectNotes || []).map((note) => (
                 <div
                   key={note.id}
                   className="group relative overflow-hidden bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-700"
@@ -380,14 +377,14 @@ const HomePage = () => {
                   <div className="relative p-6">
                     {/* Note Header */}
                     <div className="flex items-start justify-between mb-4">
-                      <div className="text-4xl">{note.thumbnail}</div>
+                      <div className="text-4xl">📚</div>
                       <div className="flex items-center space-x-2">
                         {note.isVerified && (
                           <CheckCircle className="h-4 w-4 text-green-400" title="Verified Note" />
                         )}
                         <div className="flex items-center space-x-1 text-yellow-400">
                           <Star className="h-4 w-4 fill-current" />
-                          <span className="text-sm font-semibold">{note.rating}</span>
+                          <span className="text-sm font-semibold">{note.rating || 0}</span>
                         </div>
                       </div>
                     </div>
@@ -406,36 +403,32 @@ const HomePage = () => {
                     <div className="space-y-2 mb-4">
                       <div className="flex items-center justify-between text-xs text-gray-500">
                         <span>👤 {note.author}</span>
-                        <span>📅 {note.uploadDate}</span>
+                        <span>📅 {note.createdAt?.toDate?.()?.toLocaleDateString() || 'Recent'}</span>
                       </div>
                       <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span>📄 {note.pages} pages</span>
-                        <span>📁 {note.fileSize}</span>
-                      </div>
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <span>📥 {note.downloads} downloads</span>
-                        <span className="bg-blue-600 text-white px-2 py-1 rounded text-xs">
-                          {note.fileType}
-                        </span>
+                        <span>📄 {note.fileSize}</span>
+                        <span>📥 {note.downloads || 0} downloads</span>
                       </div>
                     </div>
 
                     {/* Tags */}
-                    <div className="flex flex-wrap gap-1 mb-4">
-                      {note.tags.slice(0, 3).map((tag, index) => (
-                        <span
-                          key={index}
-                          className="bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded-full"
-                        >
-                          #{tag}
-                        </span>
-                      ))}
-                      {note.tags.length > 3 && (
-                        <span className="bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded-full">
-                          +{note.tags.length - 3}
-                        </span>
-                      )}
-                    </div>
+                    {note.tags && note.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mb-4">
+                        {note.tags.slice(0, 3).map((tag, index) => (
+                          <span
+                            key={index}
+                            className="bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded-full"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                        {note.tags.length > 3 && (
+                          <span className="bg-gray-700 text-gray-300 text-xs px-2 py-1 rounded-full">
+                            +{note.tags.length - 3}
+                          </span>
+                        )}
+                      </div>
+                    )}
 
                     {/* Action Buttons */}
                     <div className="flex space-x-2">
@@ -446,7 +439,10 @@ const HomePage = () => {
                         <Download className="h-4 w-4" />
                         <span>Download</span>
                       </button>
-                      <button className="bg-gray-700 text-gray-300 py-2 px-3 rounded-lg hover:bg-gray-600 transition-colors">
+                      <button 
+                        onClick={() => rateNote(note.id, Math.min((note.rating || 0) + 1, 5))}
+                        className="bg-gray-700 text-gray-300 py-2 px-3 rounded-lg hover:bg-gray-600 transition-colors"
+                      >
                         <Heart className="h-4 w-4" />
                       </button>
                       <button className="bg-gray-700 text-gray-300 py-2 px-3 rounded-lg hover:bg-gray-600 transition-colors">
@@ -459,7 +455,7 @@ const HomePage = () => {
             </div>
 
             {/* Empty State */}
-            {subjectNotes.length === 0 && (
+            {(subjectNotes || []).length === 0 && (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">📚</div>
                 <h3 className="text-xl font-semibold text-gray-100 mb-2">
@@ -468,18 +464,18 @@ const HomePage = () => {
                 <p className="text-gray-400 mb-6">
                   Be the first to upload notes for {currentSubject?.name || 'this subject'}!
                 </p>
-                <button className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                <Link to="/upload" className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors">
                   Upload First Note
-                </button>
+                </Link>
               </div>
             )}
 
             {/* Notes Counter */}
             <div className="mt-8 text-center">
               <p className="text-gray-400 text-sm">
-                Showing {subjectNotes.length} notes • 
+                Showing {(subjectNotes || []).length} notes • 
                 <span className="text-green-400 ml-1">
-                  {subjectNotes.length > 0 ? 'More notes will appear as users upload them' : 'Start by uploading the first note'}
+                  {(subjectNotes || []).length > 0 ? 'More notes will appear as users upload them' : 'Start by uploading the first note'}
                 </span>
               </p>
             </div>
@@ -495,32 +491,32 @@ const HomePage = () => {
     {
       icon: <Upload className="h-6 w-6" />,
       title: 'Easy Upload',
-      description: 'Share your handwritten or digital notes with the community'
+      description: 'Share your notes with the community'
     },
     {
       icon: <Download className="h-6 w-6" />,
       title: 'Quick Download',
-      description: 'Access notes from any device, anytime, anywhere'
+      description: 'Access notes from any device, anytime'
     },
     {
       icon: <Users className="h-6 w-6" />,
       title: 'Community Driven',
-      description: 'Learn from peers and contribute to the knowledge base'
+      description: 'Learn from peers and contribute knowledge'
     },
     {
       icon: <Star className="h-6 w-6" />,
       title: 'Quality Content',
-      description: 'Vote and rate notes to maintain high quality standards'
+      description: 'Rate notes to maintain high standards'
     }
   ];
 
   return (
     <div className="min-h-screen bg-gray-900">
-      {/* Header with Logo, Search, and Auth Buttons */}
+      {/* Header */}
       <div className="bg-gray-800 shadow-lg border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            {/* Logo on the left */}
+            {/* Logo */}
             <div className="flex items-center space-x-3">
               <BookOpen className="h-10 w-10 text-green-400" />
               <div>
@@ -529,7 +525,7 @@ const HomePage = () => {
               </div>
             </div>
 
-            {/* Search bar in the center */}
+            {/* Search bar */}
             <div className="flex-1 max-w-md mx-8">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -543,7 +539,7 @@ const HomePage = () => {
               </div>
             </div>
 
-            {/* Auth buttons on the right */}
+            {/* Auth buttons */}
             <div className="flex items-center space-x-4">
               {currentUser ? (
                 <div className="flex items-center space-x-4">
@@ -551,6 +547,10 @@ const HomePage = () => {
                     <User className="h-4 w-4 text-gray-400" />
                     <span className="text-sm text-gray-300">{currentUser.displayName || currentUser.email}</span>
                   </div>
+                  <Link to="/upload" className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                    <Plus className="h-4 w-4 inline mr-2" />
+                    Upload
+                  </Link>
                   <button
                     onClick={handleLogout}
                     className="flex items-center space-x-1 text-gray-400 hover:text-red-400 transition-colors"
@@ -574,16 +574,21 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* Hero Section - Simplified */}
-      <div className="bg-gradient-to-br from-purple-600 to-green-600 text-gray-100 py-8">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-br from-purple-600 to-green-600 text-gray-100 py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-3">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
             The Ultimate Student Notes Sharing Platform
           </h2>
-          <p className="text-base md:text-lg text-gray-200 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-200 max-w-2xl mx-auto mb-8">
             Organize, share, and discover academic notes with your peers. 
             From degree to unit, find exactly what you need to excel in your studies.
           </p>
+          {!currentUser && (
+            <Link to="/signup" className="inline-block bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+              Get Started
+            </Link>
+          )}
         </div>
       </div>
 
@@ -629,15 +634,15 @@ const HomePage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div>
-              <div className="text-4xl font-bold mb-2">1000+</div>
+              <div className="text-4xl font-bold mb-2">{notes.length}+</div>
               <div className="text-purple-200">Notes Shared</div>
             </div>
             <div>
-              <div className="text-4xl font-bold mb-2">500+</div>
+              <div className="text-4xl font-bold mb-2">100+</div>
               <div className="text-green-200">Active Students</div>
             </div>
             <div>
-              <div className="text-4xl font-bold mb-2">50+</div>
+              <div className="text-4xl font-bold mb-2">20+</div>
               <div className="text-purple-200">Subjects Covered</div>
             </div>
           </div>

@@ -1,6 +1,19 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import apiService from '../services/api.js';
+import { 
+  collection, 
+  addDoc, 
+  getDocs, 
+  query, 
+  where, 
+  orderBy, 
+  doc, 
+  updateDoc,
+  deleteDoc,
+  serverTimestamp 
+} from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '../firebase/config';
 
 const NotesContext = createContext();
 
@@ -17,13 +30,19 @@ export const NotesProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const { currentUser } = useAuth();
 
-  // Fetch notes from API
-  const fetchNotes = async (params = {}) => {
+  // Fetch notes from Firestore
+  const fetchNotes = async () => {
     setLoading(true);
     try {
-      const response = await apiService.getNotes(params);
-      setNotes(response.notes);
-      return response;
+      const notesRef = collection(db, 'notes');
+      const q = query(notesRef, orderBy('createdAt', 'desc'));
+      const querySnapshot = await getDocs(q);
+      const notesData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setNotes(notesData);
+      return { notes: notesData };
     } catch (error) {
       console.error('Error fetching notes:', error);
       throw error;
@@ -33,23 +52,39 @@ export const NotesProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Fetch initial notes
     fetchNotes();
   }, []);
-
-  const getNotesBySubject = (subjectId) => {
-    return notes.filter(note => note.subject === subjectId);
-  };
 
   const addNote = async (noteData, file) => {
     setLoading(true);
     try {
-      const response = await apiService.uploadNote(noteData, file);
+      let downloadURL = '';
       
-      // Refresh notes list
-      await fetchNotes();
+      if (file) {
+        const storageRef = ref(storage, `notes/${Date.now()}_${file.name}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        downloadURL = await getDownloadURL(snapshot.ref);
+      }
+
+      const noteToAdd = {
+        ...noteData,
+        author: currentUser?.displayName || currentUser?.email || 'Anonymous',
+        authorId: currentUser?.uid,
+        downloadURL,
+        fileName: file?.name || 'No file',
+        fileSize: file ? `${(file.size / 1024 / 1024).toFixed(2)} MB` : 'N/A',
+        downloads: 0,
+        rating: 0,
+        isVerified: false,
+        createdAt: serverTimestamp(),
+        tags: noteData.tags || []
+      };
+
+      const docRef = await addDoc(collection(db, 'notes'), noteToAdd);
+      const newNote = { id: docRef.id, ...noteToAdd };
       
-      return response.note;
+      setNotes(prev => [newNote, ...prev]);
+      return { note: newNote };
     } catch (error) {
       console.error('Error adding note:', error);
       throw error;
@@ -60,23 +95,22 @@ export const NotesProvider = ({ children }) => {
 
   const downloadNote = async (noteId) => {
     try {
-      const response = await apiService.downloadNote(noteId);
-      
-      // Refresh notes list to get updated download count
-      await fetchNotes();
-      
-      // Trigger actual file download
-      const note = notes.find(n => n._id === noteId);
-      if (note) {
-        const link = document.createElement('a');
-        link.href = response.downloadUrl;
-        link.download = note.fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      const note = notes.find(n => n.id === noteId);
+      if (note && note.downloadURL) {
+        // Update download count
+        const noteRef = doc(db, 'notes', noteId);
+        await updateDoc(noteRef, {
+          downloads: (note.downloads || 0) + 1
+        });
+        
+        // Refresh notes list
+        await fetchNotes();
+        
+        // Trigger download
+        window.open(note.downloadURL, '_blank');
+        
+        return { downloadUrl: note.downloadURL };
       }
-      
-      return response;
     } catch (error) {
       console.error('Error downloading note:', error);
       throw error;
@@ -85,12 +119,13 @@ export const NotesProvider = ({ children }) => {
 
   const rateNote = async (noteId, rating) => {
     try {
-      const response = await apiService.rateNote(noteId, rating);
+      const noteRef = doc(db, 'notes', noteId);
+      await updateDoc(noteRef, { rating });
       
-      // Refresh notes list to get updated rating
+      // Refresh notes list
       await fetchNotes();
       
-      return response;
+      return { success: true };
     } catch (error) {
       console.error('Error rating note:', error);
       throw error;
@@ -99,7 +134,7 @@ export const NotesProvider = ({ children }) => {
 
   const deleteNote = async (noteId) => {
     try {
-      await apiService.deleteNote(noteId);
+      await deleteDoc(doc(db, 'notes', noteId));
       
       // Refresh notes list
       await fetchNotes();
@@ -121,7 +156,7 @@ export const NotesProvider = ({ children }) => {
       filteredNotes = filteredNotes.filter(note => 
         note.title.toLowerCase().includes(searchTerm) ||
         note.description.toLowerCase().includes(searchTerm) ||
-        note.tags.some(tag => tag.toLowerCase().includes(searchTerm)) ||
+        (note.tags && note.tags.some(tag => tag.toLowerCase().includes(searchTerm))) ||
         note.author.toLowerCase().includes(searchTerm)
       );
     }
@@ -130,7 +165,7 @@ export const NotesProvider = ({ children }) => {
   };
 
   const getNotesStats = (subjectId = null) => {
-    const relevantNotes = subjectId ? getNotesBySubject(subjectId) : notes;
+    const relevantNotes = subjectId ? notes.filter(note => note.subjectId === subjectId) : notes;
     
     if (relevantNotes.length === 0) {
       return {
@@ -143,8 +178,8 @@ export const NotesProvider = ({ children }) => {
     
     return {
       totalNotes: relevantNotes.length,
-      totalDownloads: relevantNotes.reduce((sum, note) => sum + note.downloads, 0),
-      averageRating: (relevantNotes.reduce((sum, note) => sum + note.rating, 0) / relevantNotes.length).toFixed(1),
+      totalDownloads: relevantNotes.reduce((sum, note) => sum + (note.downloads || 0), 0),
+      averageRating: (relevantNotes.reduce((sum, note) => sum + (note.rating || 0), 0) / relevantNotes.length).toFixed(1),
       verifiedNotes: relevantNotes.filter(note => note.isVerified).length
     };
   };
@@ -152,7 +187,7 @@ export const NotesProvider = ({ children }) => {
   const value = {
     notes,
     loading,
-    getNotesBySubject,
+    fetchNotes,
     addNote,
     downloadNote,
     rateNote,

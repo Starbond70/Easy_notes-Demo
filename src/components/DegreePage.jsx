@@ -1,213 +1,268 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, BookOpen, Users } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useNotes } from '../contexts/NotesContext';
+import { AcademicTree } from '../utils/AcademicStructure';
+import { 
+  BookOpen, 
+  ArrowLeft, 
+  Calendar, 
+  Book, 
+  Users,
+  Upload,
+  Search,
+  Filter,
+  ChevronRight
+} from 'lucide-react';
 
 const DegreePage = () => {
   const { degreeId } = useParams();
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedSemester, setSelectedSemester] = useState(null);
+  const [filteredSubjects, setFilteredSubjects] = useState([]);
+  const { notes, loading } = useNotes();
 
-  // Mock data for degrees and their semesters
-  const degreeData = {
-    cs: {
-      name: 'Computer Science',
-      icon: '💻',
-      description: 'Programming, algorithms, and software development',
-      semesters: [
-        {
-          id: 1,
-          name: 'Semester 1',
-          subjects: ['Programming Fundamentals', 'Mathematics I', 'Physics', 'English'],
-          noteCount: 45,
-          studentCount: 120
-        },
-        {
-          id: 2,
-          name: 'Semester 2',
-          subjects: ['Data Structures', 'Mathematics II', 'Digital Logic', 'Communication Skills'],
-          noteCount: 38,
-          studentCount: 115
-        },
-        {
-          id: 3,
-          name: 'Semester 3',
-          subjects: ['Object Oriented Programming', 'Database Systems', 'Computer Networks', 'Statistics'],
-          noteCount: 52,
-          studentCount: 110
-        },
-        {
-          id: 4,
-          name: 'Semester 4',
-          subjects: ['Software Engineering', 'Operating Systems', 'Web Development', 'Data Analysis'],
-          noteCount: 41,
-          studentCount: 105
-        },
-        {
-          id: 5,
-          name: 'Semester 5',
-          subjects: ['Artificial Intelligence', 'Computer Graphics', 'Mobile Development', 'Project Management'],
-          noteCount: 35,
-          studentCount: 100
-        },
-        {
-          id: 6,
-          name: 'Semester 6',
-          subjects: ['Machine Learning', 'Cybersecurity', 'Cloud Computing', 'Software Testing'],
-          noteCount: 28,
-          studentCount: 95
-        },
-        {
-          id: 7,
-          name: 'Semester 7',
-          subjects: ['Deep Learning', 'Blockchain', 'DevOps', 'Research Methods'],
-          noteCount: 22,
-          studentCount: 90
-        },
-        {
-          id: 8,
-          name: 'Semester 8',
-          subjects: ['Capstone Project', 'Internship', 'Professional Ethics', 'Entrepreneurship'],
-          noteCount: 15,
-          studentCount: 85
-        }
-      ]
-    },
-    ee: {
-      name: 'Electrical Engineering',
-      icon: '⚡',
-      description: 'Electronics, circuits, and power systems',
-      semesters: [
-        { id: 1, name: 'Semester 1', subjects: ['Engineering Mathematics', 'Physics', 'Chemistry', 'English'], noteCount: 42, studentCount: 100 },
-        { id: 2, name: 'Semester 2', subjects: ['Circuit Theory', 'Electronics', 'Programming', 'Mechanics'], noteCount: 38, studentCount: 95 },
-        { id: 3, name: 'Semester 3', subjects: ['Digital Electronics', 'Signals & Systems', 'Electromagnetic Theory', 'Materials Science'], noteCount: 45, studentCount: 90 },
-        { id: 4, name: 'Semester 4', subjects: ['Power Systems', 'Control Systems', 'Communication Systems', 'Microprocessors'], noteCount: 40, studentCount: 85 },
-        { id: 5, name: 'Semester 5', subjects: ['Power Electronics', 'Electric Drives', 'Renewable Energy', 'VLSI Design'], noteCount: 35, studentCount: 80 },
-        { id: 6, name: 'Semester 6', subjects: ['Smart Grid', 'IoT Systems', 'Robotics', 'Project Management'], noteCount: 30, studentCount: 75 },
-        { id: 7, name: 'Semester 7', subjects: ['Advanced Power Systems', 'Electric Vehicles', 'Research Project', 'Professional Ethics'], noteCount: 25, studentCount: 70 },
-        { id: 8, name: 'Semester 8', subjects: ['Capstone Project', 'Internship', 'Entrepreneurship', 'Technical Writing'], noteCount: 18, studentCount: 65 }
-      ]
-    },
-    me: {
-      name: 'Mechanical Engineering',
-      icon: '⚙️',
-      description: 'Mechanics, thermodynamics, and design',
-      semesters: [
-        { id: 1, name: 'Semester 1', subjects: ['Engineering Mathematics', 'Physics', 'Chemistry', 'Engineering Drawing'], noteCount: 40, studentCount: 90 },
-        { id: 2, name: 'Semester 2', subjects: ['Mechanics', 'Thermodynamics', 'Materials Science', 'Workshop Practice'], noteCount: 36, studentCount: 85 },
-        { id: 3, name: 'Semester 3', subjects: ['Fluid Mechanics', 'Machine Design', 'Manufacturing Processes', 'Strength of Materials'], noteCount: 42, studentCount: 80 },
-        { id: 4, name: 'Semester 4', subjects: ['Heat Transfer', 'Dynamics of Machines', 'CAD/CAM', 'Industrial Engineering'], noteCount: 38, studentCount: 75 },
-        { id: 5, name: 'Semester 5', subjects: ['Automobile Engineering', 'Robotics', 'Quality Control', 'Project Management'], noteCount: 32, studentCount: 70 },
-        { id: 6, name: 'Semester 6', subjects: ['Mechatronics', 'Renewable Energy', 'Operations Research', 'Safety Engineering'], noteCount: 28, studentCount: 65 },
-        { id: 7, name: 'Semester 7', subjects: ['Advanced Manufacturing', 'Finite Element Analysis', 'Research Project', 'Professional Ethics'], noteCount: 24, studentCount: 60 },
-        { id: 8, name: 'Semester 8', subjects: ['Capstone Project', 'Internship', 'Entrepreneurship', 'Technical Communication'], noteCount: 16, studentCount: 55 }
-      ]
-    },
-    ce: {
-      name: 'Civil Engineering',
-      icon: '🏗️',
-      description: 'Structures, construction, and infrastructure',
-      semesters: [
-        { id: 1, name: 'Semester 1', subjects: ['Engineering Mathematics', 'Physics', 'Chemistry', 'Engineering Drawing'], noteCount: 38, studentCount: 85 },
-        { id: 2, name: 'Semester 2', subjects: ['Mechanics', 'Surveying', 'Building Materials', 'Workshop Practice'], noteCount: 35, studentCount: 80 },
-        { id: 3, name: 'Semester 3', subjects: ['Structural Analysis', 'Fluid Mechanics', 'Transportation Engineering', 'Geotechnical Engineering'], noteCount: 40, studentCount: 75 },
-        { id: 4, name: 'Semester 4', subjects: ['Reinforced Concrete', 'Highway Engineering', 'Water Resources', 'Construction Management'], noteCount: 36, studentCount: 70 },
-        { id: 5, name: 'Semester 5', subjects: ['Steel Structures', 'Environmental Engineering', 'Project Planning', 'Quantity Surveying'], noteCount: 30, studentCount: 65 },
-        { id: 6, name: 'Semester 6', subjects: ['Bridge Engineering', 'Urban Planning', 'Construction Technology', 'Safety Management'], noteCount: 26, studentCount: 60 },
-        { id: 7, name: 'Semester 7', subjects: ['Advanced Structures', 'Sustainable Construction', 'Research Project', 'Professional Ethics'], noteCount: 22, studentCount: 55 },
-        { id: 8, name: 'Semester 8', subjects: ['Capstone Project', 'Internship', 'Entrepreneurship', 'Technical Writing'], noteCount: 14, studentCount: 50 }
-      ]
+  const academicTree = new AcademicTree();
+  
+  // Find the degree type and degree from the degreeId
+  const findDegreeInfo = () => {
+    for (const [degreeTypeId, degrees] of Object.entries(academicTree.degrees)) {
+      const degree = degrees.find(d => d.id === degreeId);
+      if (degree) {
+        return { degreeTypeId, degree };
+      }
     }
+    return null;
   };
 
-  const degree = degreeData[degreeId];
+  const degreeInfo = findDegreeInfo();
+  const semesters = degreeInfo ? academicTree.getSemesters(degreeInfo.degreeTypeId, degreeId) : [];
 
-  if (!degree) {
+  useEffect(() => {
+    if (selectedSemester) {
+      const subjects = academicTree.getSubjects(degreeInfo.degreeTypeId, degreeId, selectedSemester);
+      setFilteredSubjects(subjects);
+    }
+  }, [selectedSemester, degreeId, degreeInfo]);
+
+  const getNotesForSubject = (subjectId) => {
+    return notes.filter(note => note.subjectId === subjectId);
+  };
+
+  const getSubjectStats = (subjectId) => {
+    const subjectNotes = getNotesForSubject(subjectId);
+    return {
+      totalNotes: subjectNotes.length,
+      totalDownloads: subjectNotes.reduce((sum, note) => sum + (note.downloads || 0), 0),
+      averageRating: subjectNotes.length > 0 
+        ? (subjectNotes.reduce((sum, note) => sum + (note.rating || 0), 0) / subjectNotes.length).toFixed(1)
+        : 0
+    };
+  };
+
+  if (!degreeInfo) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Degree not found</h1>
-          <Link to="/" className="btn-primary">Go back home</Link>
+          <BookOpen className="h-16 w-16 text-red-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-100 mb-2">Degree Not Found</h2>
+          <p className="text-gray-400 mb-4">The requested degree could not be found.</p>
+          <button
+            onClick={() => navigate('/')}
+            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Go Back Home
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-900">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center space-x-4">
-            <Link to="/" className="flex items-center space-x-2 text-gray-600 hover:text-primary-600">
-              <ArrowLeft className="h-5 w-5" />
-              <span>Back to Home</span>
-            </Link>
-          </div>
-          
-          <div className="mt-4 flex items-center space-x-4">
-            <div className="text-4xl">{degree.icon}</div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">{degree.name}</h1>
-              <p className="text-gray-600">{degree.description}</p>
+      <div className="bg-gray-800 shadow-lg border-b border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate('/')}
+                className="flex items-center space-x-2 text-gray-400 hover:text-gray-200 transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back to Home</span>
+              </button>
+              <div className="h-6 w-px bg-gray-600"></div>
+              <div className="flex items-center space-x-3">
+                <BookOpen className="h-8 w-8 text-green-400" />
+                <div>
+                  <h1 className="text-xl font-bold text-gray-100">{degreeInfo.degree.fullName}</h1>
+                  <p className="text-sm text-gray-400">Duration: {degreeInfo.degree.duration}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Search subjects..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 rounded-lg border border-gray-600 bg-gray-700 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                />
+              </div>
+              <Link to="/upload" className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm">
+                <Upload className="h-4 w-4 inline mr-2" />
+                Upload Notes
+              </Link>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Semesters Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Select a Semester
-          </h2>
-          <p className="text-gray-600">
-            Choose a semester to explore subjects and access notes
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {degree.semesters.map((semester) => (
-            <Link
-              key={semester.id}
-              to={`/degree/${degreeId}/semester/${semester.id}`}
-              className="card hover:shadow-lg transition-shadow duration-300 group"
-            >
-              <div className="text-center">
-                <div className="bg-primary-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Calendar className="h-8 w-8 text-primary-600" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  {semester.name}
-                </h3>
-                
-                <div className="space-y-2 mb-4">
-                  {semester.subjects.slice(0, 3).map((subject, index) => (
-                    <div key={index} className="text-sm text-gray-600">
-                      {subject}
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Semesters Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-100 mb-4 flex items-center">
+                <Calendar className="h-5 w-5 mr-2 text-green-400" />
+                Semesters
+              </h3>
+              
+              <div className="space-y-2">
+                {semesters.map((semester) => (
+                  <button
+                    key={semester.id}
+                    onClick={() => setSelectedSemester(semester.id)}
+                    className={`w-full text-left p-3 rounded-lg transition-colors ${
+                      selectedSemester === semester.id
+                        ? 'bg-green-600 text-white'
+                        : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{semester.name}</span>
+                      <span className="text-sm opacity-75">{semester.subjects.length} subjects</span>
                     </div>
-                  ))}
-                  {semester.subjects.length > 3 && (
-                    <div className="text-sm text-gray-500">
-                      +{semester.subjects.length - 3} more subjects
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex justify-between text-sm text-gray-500 mb-4">
-                  <div className="flex items-center space-x-1">
-                    <BookOpen className="h-4 w-4" />
-                    <span>{semester.noteCount} notes</span>
-                  </div>
-                  <div className="flex items-center space-x-1">
-                    <Users className="h-4 w-4" />
-                    <span>{semester.studentCount} students</span>
-                  </div>
-                </div>
-
-                <div className="text-primary-600 group-hover:text-primary-700 font-medium">
-                  View Subjects →
-                </div>
+                  </button>
+                ))}
               </div>
-            </Link>
-          ))}
+            </div>
+          </div>
+
+          {/* Subjects and Notes */}
+          <div className="lg:col-span-3">
+            {selectedSemester ? (
+              <div>
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold text-gray-100 mb-2">
+                    {semesters.find(s => s.id === selectedSemester)?.name} Subjects
+                  </h2>
+                  <p className="text-gray-400">
+                    Browse and download notes for each subject in this semester
+                  </p>
+                </div>
+
+                {/* Subjects Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {filteredSubjects
+                    .filter(subject => 
+                      subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                      subject.description.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .map((subject) => {
+                      const stats = getSubjectStats(subject.id);
+                      const subjectNotes = getNotesForSubject(subject.id);
+                      
+                      return (
+                        <div
+                          key={subject.id}
+                          className="bg-gray-800 rounded-2xl p-6 border border-gray-700 hover:border-green-500 transition-colors"
+                        >
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="text-4xl">📚</div>
+                            <div className="text-right">
+                              <div className="text-sm text-gray-400">Notes</div>
+                              <div className="text-2xl font-bold text-green-400">{stats.totalNotes}</div>
+                            </div>
+                          </div>
+
+                          <h3 className="text-lg font-bold text-gray-100 mb-2">
+                            {subject.name}
+                          </h3>
+                          
+                          <p className="text-gray-400 text-sm mb-4 line-clamp-2">
+                            {subject.description}
+                          </p>
+
+                          {/* Subject Stats */}
+                          <div className="grid grid-cols-3 gap-2 mb-4 text-xs text-gray-500">
+                            <div className="text-center">
+                              <div className="font-semibold text-green-400">{stats.totalNotes}</div>
+                              <div>Notes</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-semibold text-blue-400">{stats.totalDownloads}</div>
+                              <div>Downloads</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-semibold text-yellow-400">{stats.averageRating}</div>
+                              <div>Rating</div>
+                            </div>
+                          </div>
+
+                          {/* Action Buttons */}
+                          <div className="flex space-x-2">
+                            <Link
+                              to={`/degree/${degreeId}/semester/${selectedSemester}/subject/${subject.id}`}
+                              className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium text-center"
+                            >
+                              View Notes
+                            </Link>
+                            <Link
+                              to="/upload"
+                              className="bg-gray-700 text-gray-300 py-2 px-3 rounded-lg hover:bg-gray-600 transition-colors"
+                            >
+                              <Upload className="h-4 w-4" />
+                            </Link>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+
+                {/* Empty State */}
+                {filteredSubjects.filter(subject => 
+                  subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                  subject.description.toLowerCase().includes(searchTerm.toLowerCase())
+                ).length === 0 && (
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">🔍</div>
+                    <h3 className="text-xl font-semibold text-gray-100 mb-2">
+                      No subjects found
+                    </h3>
+                    <p className="text-gray-400">
+                      {searchTerm ? 'Try adjusting your search terms' : 'No subjects available for this semester'}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-6xl mb-4">📚</div>
+                <h3 className="text-xl font-semibold text-gray-100 mb-2">
+                  Select a Semester
+                </h3>
+                <p className="text-gray-400">
+                  Choose a semester from the sidebar to view subjects and notes
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

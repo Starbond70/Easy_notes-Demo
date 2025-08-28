@@ -1,5 +1,12 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import apiService from '../services/api.js';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged,
+  updateProfile 
+} from 'firebase/auth';
+import { auth } from '../firebase/config';
 
 const AuthContext = createContext();
 
@@ -15,79 +22,52 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Check if user is already logged in (token exists)
-    const token = localStorage.getItem('token');
-    if (token) {
-      apiService.getProfile()
-        .then(response => {
-          setCurrentUser(response.user);
-        })
-        .catch(error => {
-          console.error('Failed to get profile:', error);
-          localStorage.removeItem('token');
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    } else {
-      setLoading(false);
-    }
-  }, []);
-
   const signup = async (email, password, displayName) => {
     try {
-      const response = await apiService.register({ email, password, displayName });
-      
-      // Store token and set user
-      localStorage.setItem('token', response.token);
-      setCurrentUser(response.user);
-      
-      return response;
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(result.user, { displayName });
+      return result;
     } catch (error) {
-      console.error('Signup error:', error);
       throw error;
     }
   };
 
   const login = async (email, password) => {
     try {
-      const response = await apiService.login({ email, password });
-      
-      // Store token and set user
-      localStorage.setItem('token', response.token);
-      setCurrentUser(response.user);
-      
-      return response;
+      return await signInWithEmailAndPassword(auth, email, password);
     } catch (error) {
-      console.error('Login error:', error);
       throw error;
     }
   };
 
   const logout = async () => {
     try {
-      // Remove token and clear user
-      localStorage.removeItem('token');
-      setCurrentUser(null);
+      await signOut(auth);
     } catch (error) {
-      console.error('Logout error:', error);
-      // Still clear local state even if there's an error
-      localStorage.removeItem('token');
-      setCurrentUser(null);
+      throw error;
     }
   };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setLoading(false);
+    });
+
+    return unsubscribe;
+  }, []);
 
   const value = {
     currentUser,
     signup,
     login,
-    logout
+    logout,
+    loading
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

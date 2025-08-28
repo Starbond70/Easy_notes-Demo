@@ -1,246 +1,175 @@
-# EasyNotes - Student Notes Sharing Platform
+# EasyNotes Demo
 
-A comprehensive student notes sharing platform built with React.js and Express.js + MongoDB, designed to help students organize, share, and discover academic notes in a structured manner.
+A comprehensive student notes sharing platform built with React, Firebase, and Tailwind CSS, featuring a hierarchical academic structure.
 
-## 🎯 Project Overview
+## Features
 
-EasyNotes addresses the common problem of scattered academic notes across various platforms (WhatsApp, Telegram, Google Drive) by providing a centralized, organized platform with a hierarchical structure:
+- 🔐 **User Authentication** - Sign up, login, and logout with Firebase
+- 🎓 **Hierarchical Navigation** - Degree Type → Degree → Specialization → Semester → Subject
+- 📚 **Academic Structure** - Dynamic semester and subject organization
+- 📝 **Notes Management** - Upload, view, and download notes by subject
+- 🔍 **Advanced Search** - Find notes by title, description, or tags
+- ⭐ **Rating System** - Rate and review notes
+- 📱 **Responsive Design** - Works on all devices
+- 🎨 **Modern UI** - Beautiful dark theme with smooth animations
+- 📥 **File Downloads** - Direct download links for all note files
 
-**Degree → Semester → Subject → Unit**
+## Academic Structure
 
-### Key Features
+The platform supports a comprehensive academic hierarchy:
 
-- **Hierarchical Navigation**: Easy browsing through degrees, semesters, subjects, and units
-- **Community-Driven**: Students can upload and download handwritten or digital notes
-- **User Authentication**: Secure login/signup system with JWT authentication
-- **File Upload**: Support for PDF, Word documents, and images
-- **Search & Filter**: Find notes quickly with advanced search and filtering
-- **Rating System**: Community-driven quality control with likes and ratings
-- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
+### Degree Types
+- **Diploma** (2-3 years)
+- **Bachelor's Degree** (3-4 years) 
+- **Master's Degree** (1-2 years)
 
-## 🛠️ Tech Stack
+### Degrees Available
+- **DCA** - Diploma in Computer Applications
+- **DCE** - Diploma in Computer Engineering
+- **B.Tech** - Bachelor of Technology (with specializations)
+- **BCA** - Bachelor of Computer Applications
+- **M.Tech** - Master of Technology (with specializations)
 
-- **Frontend**: React.js 19.1.1
-- **Styling**: Tailwind CSS
+### Specializations (B.Tech & M.Tech)
+- Computer Science
+- Information Technology
+- Electronics & Communication
+- Mechanical Engineering
+- Civil Engineering
+- Advanced Computer Science
+- Software Engineering
+
+### Dynamic Semesters
+- **DCA**: 1 semester
+- **DCE**: 3 semesters
+- **B.Tech**: 8 semesters
+- **BCA**: 6 semesters
+- **M.Tech**: 2 semesters
+
+Each semester contains relevant subjects with detailed descriptions.
+
+## Tech Stack
+
+- **Frontend**: React 19, Vite, Tailwind CSS
+- **Backend**: Firebase (Authentication, Firestore, Storage)
 - **Icons**: Lucide React
 - **Routing**: React Router DOM
-- **Backend**: Express.js + Node.js
-  - MongoDB with Mongoose ODM
-  - JWT Authentication
-  - Multer for file uploads
-  - Express middleware for security
-- **Build Tool**: Vite
-- **Hosting**: Vercel/Netlify ready
+- **Data Structure**: Custom AcademicTree class
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
 - Node.js (v16 or higher)
 - npm or yarn
-- MongoDB (local or MongoDB Atlas)
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd easy-notes
+   cd Easy_notes-Demo
    ```
 
-2. **Install frontend dependencies**
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-3. **Install backend dependencies**
-   ```bash
-   cd server
-   npm install
-   cd ..
-   ```
+3. **Set up Firebase**
+   - Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
+   - Enable Authentication, Firestore, and Storage
+   - Copy your Firebase config to `src/firebase/config.js`
 
-4. **Environment Setup**
-   - Create `server/.env` file with:
-   ```bash
-   PORT=5000
-   MONGODB_URI=mongodb://localhost:27017/easy-notes
-   JWT_SECRET=your-secret-key
-   FRONTEND_URL=http://localhost:5173
-   ```
-   
-   - Create `.env.local` file with:
-   ```bash
-   VITE_API_URL=http://localhost:5000/api
-   ```
-
-5. **Start MongoDB**
-   ```bash
-   # Local MongoDB
-   mongod
-   
-   # Or use MongoDB Atlas (cloud)
-   ```
-
-6. **Start the backend server**
-   ```bash
-   cd server
-   npm run dev
-   ```
-
-7. **Start the frontend (in a new terminal)**
+4. **Start development server**
    ```bash
    npm run dev
    ```
 
-8. **Open your browser**
+5. **Open your browser**
    Navigate to `http://localhost:5173`
 
-## 📁 Project Structure
+## Firebase Configuration
+
+Update `src/firebase/config.js` with your Firebase project details:
+
+```javascript
+const firebaseConfig = {
+  apiKey: "your-api-key",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "your-sender-id",
+  appId: "your-app-id"
+};
+```
+
+## Project Structure
 
 ```
 src/
 ├── components/          # React components
-│   ├── HomePage.jsx     # Landing page with degree selection
-│   ├── DegreePage.jsx   # Semester selection for a degree
-│   ├── SemesterPage.jsx # Subject and notes listing
-│   ├── UploadPage.jsx   # File upload functionality
-│   ├── LoginPage.jsx    # User authentication
-│   ├── SignupPage.jsx   # User registration
-│   └── Navbar.jsx       # Navigation component
-├── contexts/            # React contexts
-│   ├── AuthContext.jsx  # Authentication state management
-│   └── NotesContext.jsx # Notes state management
-├── services/            # API service layer
-│   └── api.js          # HTTP client for backend communication
-├── utils/               # Utility classes
-│   └── AcademicStructure.js # Tree data structure for academic programs
-├── App.jsx              # Main application component
-├── main.jsx             # Application entry point
-└── index.css            # Global styles and Tailwind imports
-
-server/
-├── models/              # MongoDB schemas
-│   ├── User.js         # User model
-│   └── Note.js         # Note model
-├── routes/              # API endpoints
-│   ├── auth.js         # Authentication routes
-│   ├── notes.js        # Notes management routes
-│   └── users.js        # User management routes
-├── middleware/          # Custom middleware
-│   └── auth.js         # JWT authentication middleware
-├── uploads/             # File storage directory
-├── server.js            # Main server file
-└── package.json         # Backend dependencies
+│   ├── HomePage.jsx    # Main page with hierarchical navigation
+│   ├── DegreePage.jsx  # Semester and subject selection
+│   ├── SemesterPage.jsx # Notes listing with filters and download
+│   ├── LoginPage.jsx   # User authentication
+│   ├── SignupPage.jsx  # User registration
+│   └── UploadPage.jsx  # Note upload with academic structure
+├── contexts/           # React contexts
+│   ├── AuthContext.jsx # Firebase authentication state
+│   └── NotesContext.jsx # Firebase Firestore data management
+├── firebase/           # Firebase configuration
+│   └── config.js      # Firebase setup
+├── utils/              # Utility classes
+│   └── AcademicStructure.js # Academic tree data structure
+└── App.jsx            # Main app component with routing
 ```
 
-## 🎨 Features in Detail
+## Demo Features
 
-### 1. Homepage
-- Hero section with search functionality
-- Multi-step degree selection with tree data structure
-- Feature highlights and statistics
-- Call-to-action buttons
+### For Recording
 
-### 2. Academic Tree Structure
-- **Degree Types**: Diploma, Bachelor's, Master's
-- **Degrees**: DCA, DCE, B.Tech, BCA, M.Tech
-- **Specializations**: Computer Science, Information Technology
-- **Dynamic Semesters**: Based on degree duration (2-8 semesters)
-- **Subjects**: Specific to each semester and specialization
+This demo showcases the complete academic notes platform:
 
-### 3. Degree Navigation
-- Semester-wise organization
-- Subject count and note statistics
-- Visual indicators for content availability
+- **Hierarchical Navigation**: Complete degree → semester → subject flow
+- **Dynamic Content**: Different semesters for different degrees
+- **File Management**: Upload, download, and organize notes
+- **User Experience**: Smooth transitions and intuitive navigation
+- **Real-time Data**: Firebase integration for live updates
+- **Search & Filter**: Advanced note discovery
+- **Responsive Design**: Works on all screen sizes
 
-### 4. Semester View
-- Subject filtering sidebar
-- Notes listing with metadata
-- Search and filter functionality
-- File type indicators
+### Key User Flows
 
-### 5. Upload System
-- Drag-and-drop file upload
-- Form validation
-- File type and size restrictions
-- Progress indicators
+1. **Homepage Navigation**: 
+   - Select Degree Type → Degree → Specialization → Semester → Subject
+   - View available notes for each subject
 
-### 6. Authentication
-- Email/password registration
-- JWT-based authentication
-- Password visibility toggle
-- Form validation and error handling
+2. **Degree Page**: 
+   - Browse semesters for a specific degree
+   - View subject counts and statistics
 
-## 🔧 Available Scripts
+3. **Semester Page**: 
+   - Browse notes for a specific subject
+   - Search, filter, and sort notes
+   - Download notes with one click
 
-### Frontend
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
+4. **Upload System**: 
+   - Structured note upload with academic categorization
+   - File validation and metadata management
 
-### Backend
-- `cd server && npm run dev` - Start backend server
-- `cd server && npm start` - Start production backend
+5. **Authentication**: 
+   - Complete signup/login flow
+   - User profile management
 
-## 🌐 Deployment
+## Build for Production
 
-### Backend Deployment
-1. Set production environment variables
-2. Use MongoDB Atlas for database
-3. Deploy to Heroku, Railway, or similar platforms
-4. Use cloud storage (AWS S3) for file uploads
+```bash
+npm run build
+```
 
-### Frontend Deployment
-1. Build the project: `npm run build`
-2. Deploy to Vercel, Netlify, or any static hosting
-3. Update `VITE_API_URL` to production backend URL
+The built files will be in the `dist/` directory.
 
-## 📱 Responsive Design
+## License
 
-The application is fully responsive and optimized for:
-- Desktop (1024px+)
-- Tablet (768px - 1023px)
-- Mobile (320px - 767px)
-
-## 🔒 Security Features
-
-- JWT Authentication
-- Password hashing with bcrypt
-- Input validation with express-validator
-- Rate limiting
-- CORS protection
-- Helmet security headers
-- File upload restrictions
-
-## 🚧 Future Enhancements
-
-- [ ] Real-time notifications
-- [ ] Advanced search with filters
-- [ ] Note preview functionality
-- [ ] User profiles and reputation system
-- [ ] Mobile app development
-- [ ] Offline support
-- [ ] Collaborative editing
-- [ ] AI-powered content recommendations
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 👥 Team
-
-This project was developed as part of a hackathon to solve the problem of scattered student notes and create a centralized, organized platform for academic content sharing.
-
----
-
-**Note**: This is a demo project. For production use, ensure proper security measures, data validation, and user privacy compliance.
+MIT License - feel free to use this project for your demos and presentations!
