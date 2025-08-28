@@ -1,0 +1,23 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="32" fill="#10B981"/>
+  
+  <!-- Book icon -->
+  <path d="M16 20C16 18.8954 16.8954 18 18 18H46C47.1046 18 48 18.8954 48 20V44C48 45.1046 47.1046 46 46 46H18C16.8954 46 16 45.1046 16 44V20Z" fill="white"/>
+  
+  <!-- Book pages -->
+  <path d="M18 22H46V42H18V22Z" fill="#F3F4F6"/>
+  
+  <!-- Book spine -->
+  <rect x="18" y="18" width="4" height="28" fill="#D1D5DB"/>
+  
+  <!-- Text lines -->
+  <rect x="22" y="26" width="20" height="2" rx="1" fill="#6B7280"/>
+  <rect x="22" y="30" width="16" height="2" rx="1" fill="#6B7280"/>
+  <rect x="22" y="34" width="24" height="2" rx="1" fill="#6B7280"/>
+  <rect x="22" y="38" width="12" height="2" rx="1" fill="#6B7280"/>
+  
+  <!-- Plus icon for sharing -->
+  <circle cx="44" cy="14" r="6" fill="#EF4444"/>
+  <path d="M44 11V17M41 14H47" stroke="white" stroke-width="2" stroke-linecap="round"/>
+</svg>

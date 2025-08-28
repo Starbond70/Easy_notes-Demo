@@ -142,22 +142,22 @@ const UploadPage = () => {
   const subjects = formData.semester ? academicTree.getSubjects(formData.degreeType, formData.degree, formData.semester, formData.specialization) : [];
 
   return (
-  <div className="min-h-screen bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+  <div className="min-h-screen bg-gray-900 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 sm:mb-8">
           <div className="flex justify-center mb-4">
-            <BookOpen className="h-16 w-16 text-green-400" />
+            <BookOpen className="h-12 w-12 sm:h-16 sm:w-16 text-green-400" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-100 mb-2">Upload Notes</h1>
-          <p className="text-gray-400">Share your knowledge with the community</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-100 mb-2">Upload Notes</h1>
+          <p className="text-gray-400 text-sm sm:text-base">Share your knowledge with the community</p>
         </div>
 
         {/* Upload Form */}
-        <div className="bg-gray-800 rounded-2xl p-8 border border-gray-700">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-gray-800 rounded-2xl p-4 sm:p-6 lg:p-8 border border-gray-700">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg">
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
@@ -174,7 +174,7 @@ const UploadPage = () => {
                 required
                 value={formData.title}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors text-sm"
                 placeholder="Enter a descriptive title for your notes"
               />
             </div>
@@ -191,13 +191,13 @@ const UploadPage = () => {
                 required
                 value={formData.description}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors resize-none"
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors resize-none text-sm"
                 placeholder="Describe what these notes cover and any important details"
               />
             </div>
 
             {/* Academic Structure Selection */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {/* Degree Type */}
               <div>
                 <label htmlFor="degreeType" className="block text-sm font-medium text-gray-300 mb-2">
@@ -209,7 +209,7 @@ const UploadPage = () => {
                   required
                   value={formData.degreeType}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors text-sm"
                 >
                   <option value="">Select Degree Type</option>
                   {academicTree.degreeTypes.map((type) => (
@@ -232,7 +232,7 @@ const UploadPage = () => {
                   value={formData.degree}
                   onChange={handleInputChange}
                   disabled={!formData.degreeType}
-                  className="w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   <option value="">Select Degree</option>
                   {(academicTree.degrees[formData.degreeType] ?? []).map((degree) => (
@@ -255,7 +255,7 @@ const UploadPage = () => {
                   name="specialization"
                   value={formData.specialization}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors text-sm"
                 >
                   <option value="">Select Specialization</option>
                   {selectedDegree?.specializations?.map((spec) => (
@@ -267,7 +267,7 @@ const UploadPage = () => {
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {/* Semester */}
               <div>
                 <label htmlFor="semester" className="block text-sm font-medium text-gray-300 mb-2">
@@ -280,7 +280,7 @@ const UploadPage = () => {
                   value={formData.semester}
                   onChange={handleInputChange}
                   disabled={!formData.degree}
-                  className="w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   <option value="">Select Semester</option>
                   {semesters.map((semester) => (
@@ -303,7 +303,7 @@ const UploadPage = () => {
                   value={formData.subject}
                   onChange={handleInputChange}
                   disabled={!formData.semester}
-                  className="w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                 >
                   <option value="">Select Subject</option>
                   {subjects.map((subject) => (
@@ -320,21 +320,22 @@ const UploadPage = () => {
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Tags
               </label>
-              <div className="flex space-x-2 mb-2">
+              <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mb-2">
                 <input
                   type="text"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                  className="flex-1 px-4 py-2 border border-gray-600 rounded-lg bg-gray-700 text-gray-300 placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+                  className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-300 placeholder-gray-400 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors text-sm"
                   placeholder="Add tags to help others find your notes"
                 />
                 <button
                   type="button"
                   onClick={addTag}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  className="px-3 sm:px-4 py-2 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm flex items-center justify-center"
                 >
-                  <Tag className="h-4 w-4" />
+                  <Tag className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Add</span>
                 </button>
               </div>
               {formData.tags.length > 0 && (
@@ -342,7 +343,7 @@ const UploadPage = () => {
                   {formData.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center space-x-1 bg-gray-700 text-gray-300 px-3 py-1 rounded-full text-sm"
+                      className="inline-flex items-center space-x-1 bg-gray-700 text-gray-300 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm"
                     >
                       <span>#{tag}</span>
                       <button
@@ -363,7 +364,7 @@ const UploadPage = () => {
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Upload File *
               </label>
-              <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
+              <div className="border-2 border-dashed border-gray-600 rounded-lg p-4 sm:p-6 text-center hover:border-green-500 transition-colors">
                 <input
                   type="file"
                   onChange={handleFileChange}
@@ -372,22 +373,22 @@ const UploadPage = () => {
                   id="file-upload"
                 />
                 <label htmlFor="file-upload" className="cursor-pointer">
-                  <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <div className="text-gray-300">
+                  <Upload className="h-8 w-8 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+                  <div className="text-gray-300 text-sm sm:text-base">
                     <span className="font-medium">Click to upload</span> or drag and drop
                   </div>
-                  <div className="text-gray-400 text-sm mt-1">
+                  <div className="text-gray-400 text-xs sm:text-sm mt-1">
                     PDF, DOC, DOCX, TXT, JPG, PNG up to 50MB
                   </div>
                 </label>
               </div>
               {file && (
-                <div className="mt-3 flex items-center justify-between bg-gray-700 px-4 py-2 rounded-lg">
-                  <span className="text-gray-300 text-sm">{file.name}</span>
+                <div className="mt-3 flex items-center justify-between bg-gray-700 px-3 sm:px-4 py-2 rounded-lg">
+                  <span className="text-gray-300 text-xs sm:text-sm truncate flex-1 mr-2">{file.name}</span>
                   <button
                     type="button"
                     onClick={() => setFile(null)}
-                    className="text-gray-400 hover:text-red-400 transition-colors"
+                    className="text-gray-400 hover:text-red-400 transition-colors flex-shrink-0"
                   >
                     <X className="h-4 w-4" />
                   </button>
@@ -396,22 +397,22 @@ const UploadPage = () => {
             </div>
 
             {/* Submit Button */}
-            <div className="flex space-x-4">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
               <button
                 type="button"
                 onClick={() => navigate('/')}
-                className="flex-1 px-4 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors text-sm"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
               >
                 {loading ? (
                   <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-b-2 border-white mr-2"></div>
                     Uploading...
                   </div>
                 ) : (
