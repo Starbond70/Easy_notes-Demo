@@ -26,7 +26,21 @@ export const useNotes = () => {
 };
 
 export const NotesProvider = ({ children }) => {
-  const [notes, setNotes] = useState([]);
+  const [notes, setNotes] = useState([
+    {
+      id: 'mock_ann_note',
+      title: 'Introduction to Neural Network',
+      description: 'Placeholder PDF for Artificial Neural Network subject.',
+      degreeId: 'btech',
+      specialization: 'ai',
+      semesterId: 'btech_sem5',
+      subjectId: 'ai_ann',
+      fileUrl: '/assets/Samrat_Singh_ANN_01.pdf',
+      author: 'System',
+      tags: ['AI', 'Neural Network', 'B.Tech'],
+      createdAt: new Date().toISOString()
+    }
+  ]);
   const [loading, setLoading] = useState(false);
   const { currentUser } = useAuth();
 

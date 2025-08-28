@@ -28,40 +28,44 @@ const UploadPage = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // Reset dependent fields when parent selection changes
-    if (name === 'degreeType') {
-      setFormData(prev => ({
-        ...prev,
-        degree: '',
-        specialization: '',
-        semester: '',
-        subject: ''
-      }));
-    } else if (name === 'degree') {
-      setFormData(prev => ({
-        ...prev,
-        specialization: '',
-        semester: '',
-        subject: ''
-      }));
-    } else if (name === 'specialization') {
-      setFormData(prev => ({
-        ...prev,
-        semester: '',
-        subject: ''
-      }));
-    } else if (name === 'semester') {
-      setFormData(prev => ({
-        ...prev,
-        subject: ''
-      }));
-    }
-    
+    setFormData(prev => {
+      if (name === 'degreeType') {
+        return {
+          ...prev,
+          degreeType: value,
+          degree: '',
+          specialization: '',
+          semester: '',
+          subject: ''
+        };
+      } else if (name === 'degree') {
+        return {
+          ...prev,
+          degree: value,
+          specialization: '',
+          semester: '',
+          subject: ''
+        };
+      } else if (name === 'specialization') {
+        return {
+          ...prev,
+          specialization: value,
+          semester: '',
+          subject: ''
+        };
+      } else if (name === 'semester') {
+        return {
+          ...prev,
+          semester: value,
+          subject: ''
+        };
+      } else {
+        return {
+          ...prev,
+          [name]: value
+        };
+      }
+    });
     if (error) setError('');
   };
 
@@ -138,7 +142,7 @@ const UploadPage = () => {
   const subjects = formData.semester ? academicTree.getSubjects(formData.degreeType, formData.degree, formData.semester, formData.specialization) : [];
 
   return (
-    <div className="min-h-screen bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+  <div className="min-h-screen bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -231,7 +235,7 @@ const UploadPage = () => {
                   className="w-full px-4 py-3 border border-gray-600 rounded-lg bg-gray-700 text-gray-100 focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="">Select Degree</option>
-                  {selectedDegreeType?.degrees.map((degree) => (
+                  {(academicTree.degrees[formData.degreeType] ?? []).map((degree) => (
                     <option key={degree.id} value={degree.id}>
                       {degree.name} - {degree.fullName}
                     </option>

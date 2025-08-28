@@ -47,6 +47,15 @@ const SemesterPage = () => {
   // Get notes for this specific subject
   const subjectNotes = notes.filter(note => note.subjectId === subjectId);
 
+    // DEBUG OUTPUT - Remove after troubleshooting
+    const debugInfo = {
+      degreeId,
+      semesterId,
+      subjectId,
+      subjectNotes,
+      allNotes: notes
+    };
+
   // Filter and sort notes
   const filteredAndSortedNotes = subjectNotes
     .filter(note => {
@@ -114,6 +123,14 @@ const SemesterPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-900">
+        {/* DEBUG OUTPUT - Remove after troubleshooting */}
+        <div className="bg-yellow-900 text-yellow-300 p-2 mb-4 rounded">
+          <div>degreeId: {debugInfo.degreeId}</div>
+          <div>semesterId: {debugInfo.semesterId}</div>
+          <div>subjectId: {debugInfo.subjectId}</div>
+          <div>subjectNotes: {JSON.stringify(debugInfo.subjectNotes)}</div>
+          <div>allNotes: {JSON.stringify(debugInfo.allNotes)}</div>
+        </div>
       {/* Header */}
       <div className="bg-gray-800 shadow-lg border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

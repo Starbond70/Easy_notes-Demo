@@ -99,6 +99,12 @@ export class AcademicTree {
           name: 'Civil Engineering',
           description: 'Infrastructure, structures, and environmental engineering',
           icon: '🏗️'
+        },
+        {
+          id: 'ai',
+          name: 'Artificial Intelligence',
+          description: 'AI, machine learning, neural networks, and data science',
+          icon: '🤖'
         }
       ],
       mtech: [
@@ -166,7 +172,8 @@ export class AcademicTree {
             { id: 'btech_math1', name: 'Engineering Mathematics I', description: 'Calculus and linear algebra' },
             { id: 'btech_physics', name: 'Engineering Physics', description: 'Mechanics and thermodynamics' },
             { id: 'btech_chemistry', name: 'Engineering Chemistry', description: 'Chemical principles' },
-            { id: 'btech_english', name: 'Technical English', description: 'Communication skills' }
+            { id: 'btech_english', name: 'Technical English', description: 'Communication skills' },
+            { id: 'ai_intro', name: 'Introduction to AI', description: 'History, applications, and basics of AI', specialization: 'ai' }
           ]
         },
         {
@@ -175,7 +182,8 @@ export class AcademicTree {
           subjects: [
             { id: 'btech_math2', name: 'Engineering Mathematics II', description: 'Differential equations' },
             { id: 'btech_programming', name: 'Programming Fundamentals', description: 'C programming' },
-            { id: 'btech_mechanics', name: 'Engineering Mechanics', description: 'Statics and dynamics' }
+            { id: 'btech_mechanics', name: 'Engineering Mechanics', description: 'Statics and dynamics' },
+            { id: 'ai_python', name: 'Python for AI', description: 'Python programming for AI and ML', specialization: 'ai' }
           ]
         },
         {
@@ -184,7 +192,8 @@ export class AcademicTree {
           subjects: [
             { id: 'btech_ds', name: 'Data Structures', description: 'Data organization and algorithms' },
             { id: 'btech_oops', name: 'Object Oriented Programming', description: 'Java programming concepts' },
-            { id: 'btech_digital', name: 'Digital Logic Design', description: 'Boolean algebra and circuits' }
+            { id: 'btech_digital', name: 'Digital Logic Design', description: 'Boolean algebra and circuits' },
+            { id: 'ai_ml_basics', name: 'Machine Learning Basics', description: 'Supervised and unsupervised learning', specialization: 'ai' }
           ]
         },
         {
@@ -193,7 +202,8 @@ export class AcademicTree {
           subjects: [
             { id: 'btech_dbms', name: 'Database Management Systems', description: 'SQL and database design' },
             { id: 'btech_computer_org', name: 'Computer Organization', description: 'Computer architecture' },
-            { id: 'btech_networks', name: 'Computer Networks', description: 'Network protocols and architecture' }
+            { id: 'btech_networks', name: 'Computer Networks', description: 'Network protocols and architecture' },
+            { id: 'ai_deep', name: 'Deep Learning', description: 'Neural networks and deep learning', specialization: 'ai' }
           ]
         },
         {
@@ -202,7 +212,8 @@ export class AcademicTree {
           subjects: [
             { id: 'btech_os', name: 'Operating Systems', description: 'OS concepts and processes' },
             { id: 'btech_software_eng', name: 'Software Engineering', description: 'Software development lifecycle' },
-            { id: 'btech_web_tech', name: 'Web Technologies', description: 'HTML, CSS, JavaScript' }
+            { id: 'btech_web_tech', name: 'Web Technologies', description: 'HTML, CSS, JavaScript' },
+            { id: 'ai_ann', name: 'Artificial Neural Network', description: 'Theory and applications of ANNs', specialization: 'ai' }
           ]
         },
         {
@@ -211,7 +222,8 @@ export class AcademicTree {
           subjects: [
             { id: 'btech_ai', name: 'Artificial Intelligence', description: 'AI algorithms and applications' },
             { id: 'btech_ml', name: 'Machine Learning', description: 'ML algorithms and data analysis' },
-            { id: 'btech_cyber', name: 'Cybersecurity', description: 'Security principles and practices' }
+            { id: 'btech_cyber', name: 'Cybersecurity', description: 'Security principles and practices' },
+            { id: 'ai_nlp', name: 'Natural Language Processing', description: 'NLP techniques and applications', specialization: 'ai' }
           ]
         },
         {
@@ -219,7 +231,8 @@ export class AcademicTree {
           name: 'Semester 7',
           subjects: [
             { id: 'btech_project1', name: 'Project Phase I', description: 'Capstone project initiation' },
-            { id: 'btech_elective1', name: 'Elective I', description: 'Specialized course selection' }
+            { id: 'btech_elective1', name: 'Elective I', description: 'Specialized course selection' },
+            { id: 'ai_cv', name: 'Computer Vision', description: 'Image processing and computer vision', specialization: 'ai' }
           ]
         },
         {
@@ -227,7 +240,8 @@ export class AcademicTree {
           name: 'Semester 8',
           subjects: [
             { id: 'btech_project2', name: 'Project Phase II', description: 'Capstone project completion' },
-            { id: 'btech_elective2', name: 'Elective II', description: 'Specialized course selection' }
+            { id: 'btech_elective2', name: 'Elective II', description: 'Specialized course selection' },
+            { id: 'ai_ethics', name: 'AI Ethics', description: 'Ethical issues in AI', specialization: 'ai' }
           ]
         }
       ],
@@ -324,6 +338,27 @@ export class AcademicTree {
   getSubjects(degreeTypeId, degreeId, semesterId, specializationId = null) {
     const semesters = this.getSemesters(degreeTypeId, degreeId, specializationId);
     const semester = semesters.find(s => s.id === semesterId);
+    // Add placeholder note for B.Tech AI specialization, 5th sem, subject 'Artificial Neural Network'
+    if (
+      degreeTypeId === 'bachelors' &&
+      degreeId === 'btech' &&
+      specializationId === 'ai' &&
+      semesterId === 'btech_sem5'
+    ) {
+      const subjects = semester ? semester.subjects : [];
+      // Find ANN subject
+      const annSubject = subjects.find(sub => sub.id === 'ai_ann');
+      if (annSubject) {
+        annSubject.notes = [
+          {
+            title: 'Introduction to Neural Network',
+            file: 'src/assets/Samrat_Singh_ANN_01.pdf',
+            description: 'Placeholder PDF for Artificial Neural Network subject.'
+          }
+        ];
+      }
+      return subjects;
+    }
     return semester ? semester.subjects : [];
   }
 
